@@ -32,7 +32,7 @@ File.open(ARGV[0], 'rb') { |file| seq.read(file) }
 # M3 6 - 00:10 00:14
 
 
-# testmidi3bar_tempo_120_60_30_middle_of_note.mid
+#testmidi3bar_tempo_120_60_30_middle_of_note.mid
 # M1 1 - 00:00   00:01
 # M1 2 - 00:01   00:02
 # M2 3 - 00:02   00:03.5
@@ -115,7 +115,18 @@ end
 
 # debug output
 @tempo_ranges.each do |tempo_range|
-	puts "TEMPO BPM:#{tempo_range[:bpm]} START:#{tempo_range[:start_tick]}/#{tempo_range[:start_seconds]} END:#{tempo_range[:end_tick]}/#{tempo_range[:end_seconds]} DURATION:#{tempo_range[:duration_seconds]}"
+	puts "TEMPO BPM:%3d  START:%5d/%7s  END:%5d/%7s  DURATION:%7s" %
+	[tempo_range[:bpm],
+	 tempo_range[:start_tick],
+	 "%0.4f" % tempo_range[:start_seconds],
+	 tempo_range[:end_tick],
+	 "%0.4f" % tempo_range[:end_seconds],
+	 "%0.4f" % tempo_range[:duration_seconds]
+	]
+end
+
+
+def midi_note_to_scale(number)
 end
 
 
@@ -131,9 +142,10 @@ def get_event_absolute_time event
 	event_absolute_seconds = event_start_seconds + last_tempo_range[:start_seconds]
 	
 	# Uncomment to print out all notes with seconds
-	#puts "NOTE #{event} TIME:#{event_absolute_seconds}"	
+	puts "NOTE %02d CH:%02d TIME:%5d/%7s" % [ event.note, event.channel, event.time_from_start, "%0.4f" % event_absolute_seconds]
 end
 	
+	#binding.pry
 all_note_events.each do |note|
 	get_event_absolute_time note
 end
