@@ -32,7 +32,7 @@ File.open(ARGV[0], 'rb') { |file| seq.read(file) }
 # M3 6 - 00:10 00:14
 
 
-#testmidi3bar_tempo_120_60_30_middle_of_note.mid
+# testmidi3bar_tempo_120_60_30_middle_of_note.mid
 # M1 1 - 00:00   00:01
 # M1 2 - 00:01   00:02
 # M2 3 - 00:02   00:03.5
