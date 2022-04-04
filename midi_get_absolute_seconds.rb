@@ -49,7 +49,7 @@ puts "-"*20
 puts "File Summary"
 puts "SEQ PPQN:#{seq.ppqn} TRACKS:#{seq.to_a.length}"
 
-@gm_names = {
+@gm_instrument_names = {
 # 1-8 Piano
 1=>"Acoustic Grand Piano", 2=>"Bright Acoustic Piano", 3=>"Electric Grand Piano", 4=>"Honky-tonk Piano", 5=>"Electric Piano 1", 6=>"Electric Piano 2", 7=>"Harpsichord", 8=>"Clavi",
 # 9-16 Chromatic Percussion
@@ -86,7 +86,17 @@ puts "SEQ PPQN:#{seq.ppqn} TRACKS:#{seq.to_a.length}"
 
 # utility for midi instrument names
 def pc_to_general_midi program_change
-	@gm_names[program_change+1]
+	@gm_instrument_names[program_change+1] || program_change
+end
+
+
+@gm_drum_names = {
+35=>"Acoustic Bass Drum", 36=>"Bass Drum 1", 37=>"Side Stick", 38=>"Acoustic Snare", 39=>"Hand Clap", 40=>"Electric Snare", 41=>"Low Floor Tom", 42=>"Closed Hi Hat", 43=>"High Floor Tom", 44=>"Pedal Hi-Hat", 45=>"Low Tom", 46=>"Open Hi-Hat", 47=>"Low-Mid Tom", 48=>"Hi-Mid Tom", 49=>"Crash Cymbal 1", 50=>"High Tom", 51=>"Ride Cymbal 1", 52=>"Chinese Cymbal", 53=>"Ride Bell", 54=>"Tambourine", 55=>"Splash Cymbal", 56=>"Cowbell", 57=>"Crash Cymbal 2", 58=>"Vibraslap", 59=>"Ride Cymbal 2", 60=>"Hi Bongo", 61=>"Low Bongo", 62=>"Mute Hi Conga", 63=>"Open Hi Conga", 64=>"Low Conga", 65=>"High Timbale", 66=>"Low Timbale", 67=>"High Agogo", 68=>"Low Agogo", 69=>"Cabasa", 70=>"Maracas", 71=>"Short Whistle", 72=>"Long Whistle", 73=>"Short Guiro", 74=>"Long Guiro", 75=>"Claves", 76=>"Hi Wood Block", 77=>"Low Wood Block", 78=>"Mute Cuica", 79=>"Open Cuica", 80=>"Mute Triangle", 81=>"Open Triangle"
+}
+
+# utility for midi drum names
+def drum_note_to_general_midi drum_note
+	@gm_drum_names[drum_note] || drum_note
 end
 
 # full summary
@@ -107,7 +117,11 @@ seq.each_with_index do |track, track_index|
     programs_hash = track.events.select{|e| e.is_a? MIDI::ProgramChange}.group_by{|e| e.channel}
 	programs_hash.keys.sort.each do |key|
 		chan_programs = programs_hash[key].map{|e| e.program}
-		programs_used = chan_programs.uniq.map{|prog_number| pc_to_general_midi prog_number }.join(",")
+		if key == 9
+			programs_used = chan_programs.uniq.map{|prog_number| "Drum Kit (#{prog_number})"}.join(",")
+		else
+			programs_used = chan_programs.uniq.map{|prog_number| pc_to_general_midi prog_number }.join(",")
+		end
 		puts " \\CHAN[%02d] PROGS:%3d <%s>" %
 		[key, chan_programs.length, programs_used]
 	end
@@ -122,7 +136,11 @@ seq.each_with_index do |track, track_index|
 	notes_hash = notes.select{|e| e.respond_to?(:channel)}.group_by{|e| e.channel}
 	notes_hash.keys.sort.each do |key|
 		chan_notes = notes_hash[key].map{|e| e.note}
-		notes_used = chan_notes.uniq.map{|note_number| MIDI::Utils.note_to_s note_number }.join(",")
+		if key == 9
+			notes_used = chan_notes.uniq.map{|note_number| drum_note_to_general_midi note_number }.join(",")
+		else
+			notes_used = chan_notes.uniq.map{|note_number| MIDI::Utils.note_to_s note_number }.join(",")
+		end
 		puts " \\CHAN[%02d] NOTES:%#{event_count_length}d (%3s-%3s) [%3d] <%s>" %
 		[key, chan_notes.length, MIDI::Utils.note_to_s(chan_notes.min), MIDI::Utils.note_to_s(chan_notes.max), chan_notes.uniq.length,notes_used]
 	end
