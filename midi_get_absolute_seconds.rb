@@ -60,8 +60,9 @@ seq.each_with_index do |track, track_index|
 	notes_hash = notes.select{|e| e.respond_to?(:channel)}.group_by{|e| e.channel}
 	notes_hash.keys.sort.each do |key|
 		chan_notes = notes_hash[key].map{|e| e.note}
-		puts " \\CHAN[%02d] NOTES:%6d (%3d-%3d) [%3d]" %
-		[key, chan_notes.length, chan_notes.min, chan_notes.max, chan_notes.uniq.length]
+		notes_used = chan_notes.uniq.map{|note_number| MIDI::Utils.note_to_s note_number }.join(",")
+		puts " \\CHAN[%02d] NOTES:%6d (%3s-%3s) [%3d] <%s>" %
+		[key, chan_notes.length, MIDI::Utils.note_to_s(chan_notes.min), MIDI::Utils.note_to_s(chan_notes.max), chan_notes.uniq.length,notes_used]
 	end
 
 	tempo_events = track.events.select{|e| e.is_a? MIDI::Tempo}
