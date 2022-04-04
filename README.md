@@ -1,5 +1,5 @@
 # 🎼🌿 midi thyme
-calculate absolute seconds for midi notes using midilib in ruby
+calculate absolute seconds for midi notes using midilib in ruby, plus some pretty file summary
 
 ## output
 
