@@ -142,7 +142,7 @@ def get_event_absolute_time event
 	event_absolute_seconds = event_start_seconds + last_tempo_range[:start_seconds]
 	
 	# Uncomment to print out all notes with seconds
-	puts "NOTE %02d CH:%02d TIME:%5d/%7s" % [ event.note, event.channel, event.time_from_start, "%0.4f" % event_absolute_seconds]
+	puts "NOTE %3s (%3d) CH:%02d TIME:%6d/%7s" % [ MIDI::Utils.note_to_s(event.note), event.note, event.channel, event.time_from_start, "%0.4f" % event_absolute_seconds]
 end
 	
 	#binding.pry
