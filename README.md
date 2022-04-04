@@ -1,4 +1,4 @@
-# midi thyme
+# 🎼🌿 midi thyme
 calculate absolute seconds for midi notes using midilib in ruby
 
 ## output
