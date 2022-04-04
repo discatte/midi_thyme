@@ -12,7 +12,7 @@ TRACK [00] EVENTS:5
  \TEMPO  1000000 BPM:  60
  \TEMPO  2000000 BPM:  30
 TRACK [01] EVENTS:13
- \CHAN[00] NOTES:     6 ( 70- 72) [  2]
+ \CHAN[00] NOTES:     6 (A#4- C5) [  2] <C5,A#4>
 --------------------
 Tempo to seconds map
 TEMPO BPM:120  START:    0/ 0.0000  END:  764/ 1.9896  DURATION:  1.9896
