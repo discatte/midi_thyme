@@ -46,9 +46,10 @@ all_note_events  = []
 
 # Debug output and extract tempos and note from tracks
 puts "-"*20
+puts "File Summary"
 puts "SEQ PPQN:#{seq.ppqn} TRACKS:#{seq.to_a.length}"
 seq.each_with_index do |track, track_index|
-	puts "TRACK[%02d] EVENTS:%d" % [track_index, track.to_a.length]
+	puts "TRACK [%02d] EVENTS:%d" % [track_index, track.to_a.length]
 
 	notes = track.events.select{|e| e.is_a? MIDI::NoteOn}
 	notes.each do |note|
@@ -56,8 +57,11 @@ seq.each_with_index do |track, track_index|
 	end
 	
 	# Debug Channel Notes Summary
-	notes.select{|e| e.respond_to?(:channel)}.map{|e| e.channel}.group_by{|e| e}.each do |key,values|
-		puts "\\CHAN[%02d] NOTES:%d" % [key, values.length]
+	notes_hash = notes.select{|e| e.respond_to?(:channel)}.group_by{|e| e.channel}
+	notes_hash.keys.sort.each do |key|
+		chan_notes = notes_hash[key].map{|e| e.note}
+		puts " \\CHAN[%02d] NOTES:%6d (%3d-%3d) [%3d]" %
+		[key, chan_notes.length, chan_notes.min, chan_notes.max, chan_notes.uniq.length]
 	end
 
 	tempo_events = track.events.select{|e| e.is_a? MIDI::Tempo}
@@ -67,7 +71,7 @@ seq.each_with_index do |track, track_index|
 	
 	# Debug Tempo on TRACK
 	tempo_events.each do |tempo_event|
-		puts "\\TEMPO #{tempo_event}"
+		puts " \\TEMPO %8d BPM: %3d" % [tempo_event.data, MIDI::Tempo.mpq_to_bpm(tempo_event.data)]
 	end
 end
 puts "-"*20
@@ -85,9 +89,9 @@ end
 
 # Build tempo ranges out of tempo pairs, and the last event in the files tick time ###################
 
+puts "Tempo to seconds map"
 last_event = seq.tracks.collect{|track| track.events}.flatten.sort.last
 all_tempo_events.push last_event
-puts "LAST EVENT:#{last_event.time_from_start}"
 
 @tempo_ranges = []
 tempo_elapsed_seconds = 0.0
@@ -113,9 +117,13 @@ all_tempo_events.each_cons(2) do |tempos|
 	tempo_elapsed_seconds += tempo_duration_seconds
 end
 
+# dumb things
+tick_str_size = @tempo_ranges.last[:end_tick].to_s.length
+secs_str_size = ("%0.4f" % [@tempo_ranges.last[:end_seconds]]).length
+
 # debug output
 @tempo_ranges.each do |tempo_range|
-	puts "TEMPO BPM:%3d  START:%5d/%7s  END:%5d/%7s  DURATION:%7s" %
+	puts "TEMPO BPM:%3d  START: %#{tick_str_size}d/%#{secs_str_size}s  END: %#{tick_str_size}d/%#{secs_str_size}s  DURATION: %#{secs_str_size}s" %
 	[tempo_range[:bpm],
 	 tempo_range[:start_tick],
 	 "%0.4f" % tempo_range[:start_seconds],
@@ -123,10 +131,6 @@ end
 	 "%0.4f" % tempo_range[:end_seconds],
 	 "%0.4f" % tempo_range[:duration_seconds]
 	]
-end
-
-
-def midi_note_to_scale(number)
 end
 
 
@@ -141,11 +145,10 @@ def get_event_absolute_time event
 	event_start_seconds    = ticks_to_seconds(ticks_since_tempo, last_tempo_range[:bpm])
 	event_absolute_seconds = event_start_seconds + last_tempo_range[:start_seconds]
 	
-	# Uncomment to print out all notes with seconds
 	puts "NOTE %3s (%3d) CH:%02d TIME:%6d/%7s" % [ MIDI::Utils.note_to_s(event.note), event.note, event.channel, event.time_from_start, "%0.4f" % event_absolute_seconds]
 end
-	
-	#binding.pry
+
+
 all_note_events.each do |note|
 	get_event_absolute_time note
 end
